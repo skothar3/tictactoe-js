@@ -1,0 +1,24 @@
+{
+  "name": "tictactoe",
+  "version": "1.0.0",
+  "description": "This is a tictactoe game built using javascript",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skothar3/tictactoe-js.git"
+  },
+  "author": "skothar3",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/skothar3/tictactoe-js/issues"
+  },
+  "homepage": "https://github.com/skothar3/tictactoe-js#readme",
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "stylelint": "^16.2.0",
+    "stylelint-config-standard": "^36.0.0"
+  }
+}
