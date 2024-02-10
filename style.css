@@ -1,5 +1,114 @@
-
+@import url("https://fonts.googleapis.com/css2?family=Sixtyfour&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap");
 
 * {
   box-sizing: border-box;
+  /* border: 0.5px solid red; */
 }
+
+:root {
+  --backdrop-color: #0369a1;
+}
+
+body {
+  font-family: Quicksand, sans-serif;
+  background-color: var(--backdrop-color);
+  height: 100vh;
+  width: 100vw;
+  display: grid;
+  grid-template-rows: 1fr 5fr 1fr;
+  grid-template-columns: 2fr 5fr 2fr;
+  overflow: hidden;
+  margin: 0;
+}
+
+/* HEADER {{{ */
+h1.title {
+  font-family: Sixtyfour, sans-serif;
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  grid-row: 1 / 2;
+  grid-column: 1 / 4;
+  text-align: center;
+}
+
+/* }}} */
+
+/* LEFT PANEL {{{ */
+div.left {
+  grid-row: 2 / 3;
+  grid-column: 1 / 2;
+}
+
+/* }}} */
+
+/* RIGHT PANEL {{{ */
+div.right {
+  grid-row: 2 / 3;
+  grid-column: 3 / 4;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 2% 5%;
+}
+
+div.right div.turn {
+  font-size: clamp(1.5rem, 2.4vw, 2.5rem);
+}
+
+div.right h3 {
+  font-size: clamp(1.3rem, 2.0vw, 2.5rem);
+  margin: 0;
+}
+
+div.right h3.gamelog-title {
+  margin-top: auto;
+}
+
+div.right div.gamelog {
+  font-size: clamp(1.1rem, 1.4vw, 1.5rem);
+  height: 40%;
+  overflow-y: scroll;
+  margin: 0;
+}
+
+div.right .live {
+  outline: 2px solid black;
+}
+
+div.right div.gamelog p {
+  margin: 3%;
+  padding-bottom: 2%;
+  border-bottom: 1px solid grey;
+}
+
+div.right div.gamelog p.important {
+  font-weight: 600;
+}
+
+div.right div.gamelog div#anchor {
+  height: 1px;
+}
+
+/* }}} */
+
+/* GAMEBOARD {{{ */
+div.gameboard {
+  background-color: #000;
+  grid-row: 2 / 3;
+  grid-column: 2 / 3;
+  display: grid;
+  gap: 1vw;
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+}
+
+div.gameboard button {
+  background-color: #999;
+}
+
+div.gameboard button span {
+  font-size: clamp(1.5rem, 3vw, 3.5rem);
+}
+
+
+/* }}} */

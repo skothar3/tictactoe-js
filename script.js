@@ -1,19 +1,21 @@
+//  GLOBAL VARIABLES {{{
 const startBtn = document.querySelector('button.start');
+const quitBtn = document.querySelector('button.quit');
+const game = GameController();
+//}}}
 
-function Gameboard() {//{{{
+// FUNCTIONS {{{
+function GameBoard() {//{{{
   const board = Array(9).fill(' ');
 
   const addToken = (token, position) => {
-    if (board[position - 1] === ' ') {
-      board[position - 1] = token;
+    if (board[position] === ' ') {
+      board[position] = token;
       return 0
     } else { return 1 }
   }
 
-  const isGameOver = (token, abortGame) => {
-    if (abortGame) {
-      return 3;
-    }
+  const gameState = (token) => {
     const matchStr = new RegExp(`${token}{3}`);
     const winningSets = [
       board.slice(0, 3),
@@ -31,6 +33,14 @@ function Gameboard() {//{{{
     else { return 0 }
   }
 
+  const resetBoard = () => {
+    board.fill(' ');
+  }
+
+  const getBoard = () => {
+    return board;
+  }
+
   const viewBoard = () => {
     let index = [0, 3, 6];
     console.log('-----------------', '   ', '-----------------');
@@ -42,15 +52,16 @@ function Gameboard() {//{{{
 
   return {
     addToken,
-    isGameOver,
-    viewBoard
+    gameState,
+    getBoard,
+    resetBoard
   }
 }//}}}
 
 function Player(name, token) {//{{{
   
   const viewPlayer = () => {
-    console.log(`${name} is playing as ${token}`);
+    return `${name} is playing as ${token}`;
   }
 
   return {
@@ -60,72 +71,165 @@ function Player(name, token) {//{{{
   }
 }//}}}
 
-function GameController() {//{{{
-  const gameboard = Gameboard();
-  const player1 = Player('Player 1', 'X');
-  const player2 = Player('Player 2', 'O');
-  let currentPlayer = player1;
-  let gameOver = 0;
+function DisplayController() {//{{{
+  const DOMBoard = document.querySelector('div.gameboard');
+  // const DOMPanelLeft = document.querySelector('div.left');
+  // const DOMPanelRight = document.querySelector('div.right');
+  const DOMPlayerTurn = document.querySelector('h3.turn');
+  const DOMGameLogTitle = document.querySelector('h3.gamelog-title');
+  const DOMGameLog = document.querySelector('div.gamelog');
+  const DOMGameLogAnchor = document.querySelector('#gamelog-anchor');
 
-  const newGame = () => {
-    console.log('Firing up a new game of tictactoe!!');
-    player1.viewPlayer();
-    player2.viewPlayer();
-    console.log('Okay, here we go!');
-    gameboard.viewBoard();
+  const newGame = (player1, player2, gameBoard) => {
+    updateBoard(gameBoard);
+    updateGameLog(`NEW GAME`, 1);
+    updateGameLog(player1.viewPlayer() + ' and ' + player2.viewPlayer(), 2);
+    updatePlayerTurn(player1);
+    DOMGameLogTitle.textContent = 'Game Log';
+    DOMGameLog.classList.add('live');
+    DOMGameLogTitle.classList.add('live');
   }
 
-  const isGameOver = () => {
-    return gameOver;
+  const quitGame = (currentPlayer, gameBoard) => {
+    updateGameLog(`Awe, ${currentPlayer.name} quit the game! What a coward...`, 1);
+    setTimeout(() => {
+      updateBoard(gameBoard);
+      updatePlayerTurn();
+      DOMGameLog.replaceChildren(DOMGameLogAnchor);
+      DOMGameLogTitle.textContent = '';
+      DOMGameLog.classList.remove('live');
+      DOMGameLogTitle.classList.remove('live');
+    }, '1800');
   }
 
-  const playRound = () => {
-    console.log(`${currentPlayer.name}'s turn...'`);
-    let abortGame;
-    let playerMove = prompt(`${currentPlayer.name}, enter your move (1 - 9)`);
-    let invalidMove = gameboard.addToken(currentPlayer.token, playerMove);
+  const gameOver = (currentPlayer, gameState) => {
+    if (gameState === 1) {
+      updateGameLog(`${currentPlayer.name} wins!!!`, 1);
+    } else if (gameState === 2) {
+      updateGameLog("Looks like it's a tie...", 1);
+    }
+    updatePlayerTurn();
+  }
 
-    if (playerMove) {
-      while (invalidMove) {
-	alert('Invalid move!');
-	playerMove = prompt(`${currentPlayer.name}, enter your move (1 - 9)`);
-	invalidMove = gameboard.addToken(currentPlayer.token, playerMove);
-      }
-      gameboard.viewBoard();
-      abortGame = false;
+  const updateBoard = (gameBoard) => {
+    const board = gameBoard.getBoard();
+    const newDOMBoard = [];
+    for (let i = 0; i < board.length; i++) {
+      const gameSquare = document.createElement('button');
+      const squareContent = document.createElement('span');
+      gameSquare.classList.add('game-square');
+      gameSquare.dataset.index = i;
+      squareContent.textContent = board[i];
+      gameSquare.appendChild(squareContent);
+      newDOMBoard.push(gameSquare);
+    }
+    DOMBoard.replaceChildren(...newDOMBoard);
+  }
+
+  const updateGameLog = (message, importance) => {
+    const newLog = document.createElement('p');
+    newLog.classList.add('log');
+    if (importance === 1) {
+      newLog.classList.add('important');
+    }
+    newLog.textContent = `${message}`;
+    DOMGameLog.insertBefore(newLog, DOMGameLogAnchor);
+    DOMGameLogAnchor.scrollIntoView();
+  }
+
+  const updatePlayerMove = (currentPlayer, playerMove) => {
+    updateGameLog(`${currentPlayer.name} played square ${parseInt(playerMove) + 1}!`, 2);
+  }
+
+  const updatePlayerTurn = (currentPlayer = '') => {
+    if (currentPlayer) {
+      DOMPlayerTurn.textContent = `${currentPlayer.name}'s turn...`
     } else {
-      abortGame = true;
-    }
-
-    gameOver = gameboard.isGameOver(currentPlayer.token, abortGame);
-    if (gameOver) {
-      if (gameOver === 1){
-	console.log(currentPlayer.name, ' wins!!!');
-      } else if (gameOver === 2) {
-	console.log('Looks like a tie...');
-      } else {
-	console.log(currentPlayer.name, ' ended the game!');
-      }
-    }
-    else {
-      currentPlayer = currentPlayer === player1 ? player2 : player1;
+      DOMPlayerTurn.textContent = '';
     }
   }
-
-  newGame();
 
   return {
-    playRound,
-    isGameOver
+    newGame,
+    quitGame,
+    gameOver,
+    updateBoard,
+    updatePlayerMove,
+    updatePlayerTurn
+  }
+}//}}}
+
+function GameController() {//{{{
+  let gameBoard;
+  let player1;
+  let player2;
+  let currentPlayer;
+  let gameState;
+
+  const DOMBoard = document.querySelector('div.gameboard');
+  const displayControl = DisplayController();
+
+  const initBoard = () => {
+    gameBoard = GameBoard();
+    displayControl.updateBoard(gameBoard);
+  }
+
+  const quitGame = async () => {
+    DOMBoard.removeEventListener('click',  playRound);
+    gameBoard.resetBoard();
+    await displayControl.quitGame(currentPlayer, gameBoard);
+    player1 = null;
+    player2 = null;
+    currentPlayer = null;
+    gameState = null;
+  }
+
+  const newGame = () => {
+    DOMBoard.addEventListener('click', playRound);
+    gameBoard.resetBoard();
+    player1 = Player('Player 1', 'X');
+    player2 = Player('Player 2', 'O');
+    currentPlayer = player1;
+    gameState = 0;
+    displayControl.newGame(player1, player2, gameBoard);
+  }
+
+  const playRound = (e) => {
+    if (!e.target.classList.contains('game-square') || gameState) { return }
+
+    const playerMove = e.target.dataset.index;
+    const invalidMove = gameBoard.addToken(currentPlayer.token, playerMove);
+
+    if (invalidMove) {return}
+
+    displayControl.updateBoard(gameBoard);
+    displayControl.updatePlayerMove(currentPlayer, playerMove);
+
+    gameState = gameBoard.gameState(currentPlayer.token);
+    if (gameState) {
+      displayControl.gameOver(currentPlayer, gameState);
+    } else {
+      currentPlayer = currentPlayer === player1 ? player2 : player1;
+      displayControl.updatePlayerTurn(currentPlayer);
+    }
+  }
+
+  initBoard();
+
+  return {
+    newGame,
+    quitGame
   }
 
 }//}}}
+//}}}
 
-
+// LISTENERS {{{
 startBtn.addEventListener('click', () => {
-  const game = GameController();
-  while (!game.isGameOver()) {
-    game.playRound();
-  }
+  game.newGame();
 })
 
+quitBtn.addEventListener('click', () => {
+  game.quitGame();
+})
+//}}}
