@@ -3,15 +3,18 @@
 
 * {
   box-sizing: border-box;
+
   /* border: 0.5px solid red; */
 }
 
 :root {
+  --h3-font-size: clamp(1.3rem, 2vw, 2.5rem);
   --backdrop-color: #0ea5e9;
-  --button-color: #bae6fd;
+  /* --button-color: #bae6fd; */
+  --button-color: #cbd5e1;
   --button-hover-color: #7dd3fc;
   --button-disabled-color: #cbd5e1;
-  --side-panel-outline: 2px solid black;
+  --side-panel-border: 2px solid black;
   --gameboard-color: #cbd5e1;
   --gameboard-hover-color: #d4d4d8;
   --gameboard-backdrop-color: black;
@@ -56,12 +59,37 @@ div.left {
 
 div.left div.scoreboard-box {
   grid-row: 1 / 2;
+  padding: 0 5%;
   opacity: 0;
   transition: var(--fade-transition);
 }
 
 div.left div.scoreboard-box.live {
   opacity: 1;
+}
+
+div.left div.scoreboard-box table.scoreboard {
+  border: var(--side-panel-border);
+  text-align: center;
+  width: 100%;
+}
+
+div.left div.scoreboard-box table.scoreboard > tr {
+
+}
+
+div.left div.scoreboard-box table.scoreboard th.score-header {
+  border: var(--side-panel-border);
+  font-size: var(--h3-font-size);
+  text-align: center;
+  margin-bottom:: 1rem;
+}
+
+div.left div.scoreboard-box table.scoreboard td.score {
+  border: var(--side-panel-border);
+  font-size: var(--h3-font-size);
+  font-weight: 600;
+  text-align: center;
 }
 
 div.left div.button-box {
@@ -73,7 +101,7 @@ div.left div.button-box {
 
 div.left div.button-box button {
   font-family: inherit;
-  font-size: clamp(1.4rem, 1.8vw, 2.5rem);
+  font-size: clamp(1.3rem, 1.8vw, 2.5rem);
   background-color: var(--button-color);
   border-radius: 12px;
   border: none;
@@ -92,9 +120,9 @@ div.left div.button-box button:active {
   box-shadow:
     inset -2px -2px 3px #0c4a6e,
     inset 2px 2px 3px #f0f9ff;
+
   /* background-color: #38bdf8; */
 }
-
 
 div.left div.button-box button:disabled {
   background-color: var(--button-disabled-color);
@@ -109,9 +137,9 @@ div.right {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 2% 5%;
+  padding: 0% 5%;
 
-/* Transition effect  */
+  /* Transition effect  */
   opacity: 0;
   transition: var(--fade-transition);
 }
@@ -121,13 +149,13 @@ div.right.live {
 }
 
 div.right h3 {
-  font-size: clamp(1.3rem, 2.0vw, 2.5rem);
+  font-size: var(--h3-font-size);
   margin: 0;
 }
 
 div.right div.notification-box,
 div.right div.gamelog-title-box {
-  outline: var(--side-panel-outline);
+  border: var(--side-panel-border);
   padding-left: 2%;
 }
 
@@ -145,7 +173,7 @@ div.right div.gamelog-title-box {
 }
 
 div.right div.gamelog {
-  outline: var(--side-panel-outline);
+  border: var(--side-panel-border);
   font-size: clamp(1.1rem, 1.4vw, 1.5rem);
   height: 40%;
   overflow-y: scroll;
@@ -189,13 +217,17 @@ div.gameboard button:hover {
 }
 
 div.gameboard button span {
-  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-size: clamp(2.0rem, 8vw, 5.5rem);
   opacity: 0;
   transition: var(--gameboard-transition);
 }
 
 div.gameboard button span.live {
   opacity: 1;
+}
+
+div.gameboard button span.win {
+  color: #ef4444;
 }
 
 /* }}} */

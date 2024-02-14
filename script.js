@@ -12,20 +12,29 @@ function GameBoard() {
     }
   };
 
-  const gameState = (token) => {
+  const getWinningSet = (token) => {
     const matchStr = new RegExp(`${token}{3}`);
-    const winningSets = [
-      board.slice(0, 3),
-      board.slice(3, 6),
-      board.slice(6),
-      [board[0], board[3], board[6]],
-      [board[1], board[4], board[7]],
-      [board[2], board[5], board[8]],
-      [board[0], board[4], board[8]],
-      [board[2], board[4], board[6]],
+    const winningIndexes = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
     ];
 
-    if (winningSets.some((winningSet) => matchStr.test(winningSet.join("")))) {
+    return winningIndexes.filter((indexSet) => {
+      const boardSet = indexSet.map(index => board[index]);
+      return matchStr.test(boardSet.join(""));
+    }).flat();
+  }
+
+  const gameState = (token) => {
+    const winningSet = getWinningSet(token);
+
+    if (winningSet.length) {
       return 1;
     } else if (!board.some((cell) => cell === " ")) {
       return 2;
@@ -65,6 +74,7 @@ function GameBoard() {
 
   return {
     addToken,
+    getWinningSet,
     gameState,
     getBoard,
     resetBoard,
@@ -90,13 +100,13 @@ function DisplayController() {
   //{{{
   const DOMBoard = document.querySelector("div.gameboard");
   const DOMPanelLeft = document.querySelector('div.left');
-  const DOMPanelRight = document.querySelector('div.right');
+  const DOMStartBtn = DOMPanelLeft.querySelector("button.start");
+  const DOMQuitBtn = DOMPanelLeft.querySelector("button.quit");
   const DOMScoreBox = DOMPanelLeft.querySelector('div.scoreboard-box');
-  const DOMNotification = document.querySelector("h3.notification");
-  const DOMGameLog = document.querySelector("div.gamelog");
-  const DOMGameLogAnchor = document.querySelector("#gamelog-anchor");
-  const DOMstartBtn = document.querySelector("button.start");
-  const DOMquitBtn = document.querySelector("button.quit");
+  const DOMPanelRight = document.querySelector('div.right');
+  const DOMNotification = DOMPanelRight.querySelector("h3.notification");
+  const DOMGameLog = DOMPanelRight.querySelector("div.gamelog");
+  const DOMGameLogAnchor = DOMPanelRight.querySelector("#gamelog-anchor");
 
   const rootEl = document.documentElement;
   const notificationDelay = parseInt(getComputedStyle(rootEl).getPropertyValue('--notification-delay').match(/\d+/)[0]);
@@ -118,10 +128,26 @@ function DisplayController() {
     DOMGameLog.insertBefore(newLog, DOMGameLogAnchor);
     DOMGameLogAnchor.scrollIntoView();
   };
+
+  const startScoreBoard = (player1, player2) => {
+    const headers = DOMScoreBox.querySelectorAll('th.score-header');
+    const scores = DOMScoreBox.querySelectorAll('td.score');
+    headers[0].textContent = player1.name;
+    headers[1].textContent = player2.name;
+    scores[0].textContent = player1.getPoints();
+    scores[0].dataset.token = player1.token;
+    scores[1].textContent = player2.getPoints();
+    scores[1].dataset.token = player2.token;
+  }
+
+  const updateScore = (currentPlayer) => {
+    const score = DOMScoreBox.querySelector(`td.score[data-token=${currentPlayer.token}]`);
+    score.textContent = currentPlayer.getPoints();
+  }
 //}}}
 
 // PUBLIC METHODS {{{
-  const init = (gameBoard) => {
+  const init = (gameBoard) => {//{{{
     const board = gameBoard.getBoard();
     const newDOMBoard = [];
     for (let i = 0; i < board.length; i++) {
@@ -134,59 +160,87 @@ function DisplayController() {
     }
     DOMBoard.replaceChildren(...newDOMBoard);
 
-    DOMquitBtn.disabled = true;
+    const scoreBoard = document.createElement('table');
+    scoreBoard.classList.add('scoreboard');
+    const headers = document.createElement('tr');
+    const scores = document.createElement('tr');
+    [0, 1].forEach(() => {
+      const header = document.createElement('th');
+      header.classList.add('score-header');
+      headers.appendChild(header);
+    });
+    [0, 1].forEach(() => {
+      const score = document.createElement('td');
+      score.classList.add('score');
+      scores.appendChild(score);
+    });
+    scoreBoard.append(headers, scores);
+    DOMScoreBox.appendChild(scoreBoard);
+
+    DOMQuitBtn.disabled = true;
   };
+//}}}
 
   const newGame = async (player1, player2, gameBoard) => {
+    startScoreBoard(player1, player2);
     updateBoard(gameBoard);
     updateGameLog(`NEW GAME`, 1);
     updateGameLog(`${player1.name} is playing as ${player1.token} and ${player2.name} is playing as ${player2.token}`)
     await updateNotification(`${player1.name}'s turn...`);
     DOMPanelRight.classList.add('live');
-    DOMPanelLeft.classList.add('live');
-    DOMstartBtn.textContent = 'Restart';
-    DOMquitBtn.disabled = false;
+    DOMScoreBox.classList.add('live');
+    DOMStartBtn.textContent = 'Restart';
+    DOMQuitBtn.disabled = false;
   };
 
   const quitGame = (currentPlayer, gameBoard) => {
-    const liveGameSquares = DOMBoard.querySelectorAll('button > span.live');
     updateGameLog(
       `Awe, ${currentPlayer.name} quit the game! What a coward...`,
       1,
     );
     delay(gameQuitDelay).then(() => {
+      const liveGameSquares = DOMBoard.querySelectorAll('button > span.live');
       liveGameSquares.forEach(el => el.classList.remove('live'));
       DOMPanelRight.classList.remove('live');
-      DOMPanelLeft.classList.remove('live');
+      DOMScoreBox.classList.remove('live');
       return delay(fadeOutDelay);
     }).then(() => {
-      DOMstartBtn.textContent = 'Start';
-      DOMquitBtn.disabled = true;
+      DOMStartBtn.textContent = 'Start';
+      DOMQuitBtn.disabled = true;
       updateNotification('');
       DOMGameLog.replaceChildren(DOMGameLogAnchor);
       updateBoard(gameBoard);
     });
   };
 
-  const gameOver = (currentPlayer, gameState) => {
+  const gameOver = (currentPlayer, gameBoard, gameState) => {
     if (gameState === 1) {
+      const winningIndexes = gameBoard.getWinningSet(currentPlayer.token);
+      winningIndexes.forEach(winningIndex => {
+	const gameSquare = DOMBoard.querySelector(`button[data-index='${winningIndex}']`);
+	gameSquare.firstChild.classList.add('win');
+      })
       updateGameLog(`${currentPlayer.name} wins!!!`, 1);
       updateNotification('Winner!');
+      updateScore(currentPlayer);
     } else if (gameState === 2) {
       updateGameLog("Looks like it's a tie...", 1);
       updateNotification('Tie Game');
     }
-    DOMstartBtn.textContent = 'New Game';
+    DOMStartBtn.textContent = 'Play Again';
   };
 
   const updateBoard = (gameBoard) => {
     const board = gameBoard.getBoard();
+    const gameSquares = DOMBoard.querySelectorAll(`button[data-index]`);
     for (let i = 0; i < board.length; i++) {
-      const gameSquare = document.querySelector(`[data-index="${i}"]`);
-      const squareContent = gameSquare.firstChild;
+      const squareContent = gameSquares[i].firstChild;
       squareContent.textContent = board[i];
-      if (!(board[i] === " ")) {
-        squareContent.classList.add("live");
+      if (!(board[i] === ' ')) {
+        squareContent.classList.add('live');
+      } else {
+	squareContent.classList.remove('live');
+	squareContent.classList.remove('win');
       }
     }
   };
@@ -259,9 +313,12 @@ const game = (function GameController() {
     display.updatePlayerMove(currentPlayer, playerMove);
 
     gameState = gameBoard.gameState(currentPlayer.token);
+
     if (gameState) {
-      display.gameOver(currentPlayer, gameState);
-      if (gameState === 1) { currentPlayer.givePoints() }
+      if (gameState === 1) {
+	currentPlayer.givePoints();
+      }
+      display.gameOver(currentPlayer, gameBoard, gameState);
     } else {
       currentPlayer = currentPlayer === player1 ? player2 : player1;
       await display.updateNotification(`${currentPlayer.name}'s turn...`);
