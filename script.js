@@ -98,12 +98,12 @@ function Player(name, token) {
 
 function DisplayController() {
   //{{{
-  const DOMBoard = document.querySelector("div.gameboard");
-  const DOMPanelLeft = document.querySelector('div.left');
+  const DOMBoard = document.querySelector('section.gameboard');
+  const DOMPanelLeft = document.querySelector('section.left');
   const DOMStartBtn = DOMPanelLeft.querySelector("button.start");
   const DOMQuitBtn = DOMPanelLeft.querySelector("button.quit");
   const DOMScoreBox = DOMPanelLeft.querySelector('div.scoreboard-box');
-  const DOMPanelRight = document.querySelector('div.right');
+  const DOMPanelRight = document.querySelector('section.right');
   const DOMNotification = DOMPanelRight.querySelector("h3.notification");
   const DOMGameLog = DOMPanelRight.querySelector("div.gamelog");
   const DOMGameLogAnchor = DOMPanelRight.querySelector("#gamelog-anchor");
@@ -283,7 +283,7 @@ const game = (function GameController() {
 
   const startBtn = document.querySelector("button.start");
   const quitBtn = document.querySelector("button.quit");
-  const DOMBoard = document.querySelector("div.gameboard");
+  const DOMBoard = document.querySelector("section.gameboard");
   const display = DisplayController();
 
 // PRIVATE METHODS {{{
