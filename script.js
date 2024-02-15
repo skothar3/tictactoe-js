@@ -177,6 +177,20 @@ function DisplayController() {
     scoreBoard.append(headers, scores);
     DOMScoreBox.appendChild(scoreBoard);
 
+    const DOMFooter = document.querySelector('footer');
+    const copyright = document.createElement('p');
+    const githubLink = document.createElement('a');
+    const githubIcon = document.createElement('img');
+    const currentYear = new Date().getFullYear();
+
+    copyright.textContent = `Copyright © ${currentYear} skothar3`;
+    githubLink.href = 'https://github.com/skothar3';
+    githubIcon.src = './github-mark.svg';
+    githubIcon.alt = 'Github logo';
+
+    githubLink.appendChild(githubIcon);
+    DOMFooter.append(copyright, githubLink);
+
     DOMQuitBtn.disabled = true;
   };
 //}}}
