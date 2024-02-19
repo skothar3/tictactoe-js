@@ -88,6 +88,10 @@ function Player(name, token) {
   const getPoints = () => points;
   const givePoints = () => points++;
 
+  if (!name) {
+    name = `Player ${token}`;
+  }
+
   return {
     name,
     token,
@@ -102,12 +106,17 @@ function DisplayController() {
   const DOMPanelLeft = document.querySelector('section.left');
   const DOMStartBtn = DOMPanelLeft.querySelector("button.start");
   const DOMQuitBtn = DOMPanelLeft.querySelector("button.quit");
+  const DOMNewPlayerDialog = document.querySelector('dialog');
+  const DOMNewPlayerForm = DOMNewPlayerDialog.querySelector('form');
+  const DOMNewPlayerFormTokens = DOMNewPlayerForm.querySelectorAll('span.player-token');
+  const DOMNewPlayerFormInput = DOMNewPlayerForm.querySelector('form input#name');
   const DOMScoreBox = DOMPanelLeft.querySelector('div.scoreboard-box');
   const DOMPanelRight = document.querySelector('section.right');
   const DOMNotification = DOMPanelRight.querySelector("h3.notification");
   const DOMGameLog = DOMPanelRight.querySelector("div.gamelog");
   const DOMGameLogAnchor = DOMPanelRight.querySelector("#gamelog-anchor");
 
+// Get transition delay times from CSS styling
   const rootEl = document.documentElement;
   const notificationDelay = parseInt(getComputedStyle(rootEl).getPropertyValue('--notification-delay').match(/\d+/)[0]);
   const fadeOutDelay = parseInt(getComputedStyle(rootEl).getPropertyValue('--fade-delay').match(/\d+/)[0]);
@@ -207,6 +216,16 @@ function DisplayController() {
     DOMQuitBtn.disabled = false;
   };
 
+  const openNewPlayerDialog = (token) => {
+    DOMNewPlayerFormTokens.forEach(span => span.textContent = token);
+    DOMNewPlayerDialog.showModal();
+  }
+  
+  const closeNewPlayerDialog = () => {
+    DOMNewPlayerDialog.close(DOMNewPlayerFormInput.value);
+    DOMNewPlayerForm.reset();
+  }
+
   const quitGame = (currentPlayer, gameBoard) => {
     updateGameLog(
       `Awe, ${currentPlayer.name} quit the game! What a coward...`,
@@ -277,6 +296,8 @@ function DisplayController() {
 
   return {
     init,
+    openNewPlayerDialog,
+    closeNewPlayerDialog,
     newGame,
     quitGame,
     gameOver,
@@ -297,6 +318,9 @@ const game = (function GameController() {
 
   const startBtn = document.querySelector("button.start");
   const quitBtn = document.querySelector("button.quit");
+  const DOMNewPlayerDialog = document.querySelector('dialog');
+  const DOMNewPlayerDialogSubmit = DOMNewPlayerDialog.querySelector('button#submit');
+  const DOMNewPlayerDialogCancel = DOMNewPlayerDialog.querySelector('button#cancel');
   const DOMBoard = document.querySelector("section.gameboard");
   const display = DisplayController();
 
@@ -304,8 +328,30 @@ const game = (function GameController() {
   const init = () => {
     gameBoard = GameBoard();
     display.init(gameBoard);
+    DOMNewPlayerDialogSubmit.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!player1) {  
+	display.closeNewPlayerDialog();
+	player1 = Player(DOMNewPlayerDialog.returnValue, 'X');
+	display.openNewPlayerDialog('O');
+      } else if (!player2) {
+	display.closeNewPlayerDialog();
+	player2 = Player(DOMNewPlayerDialog.returnValue, 'O');
+	newGame();
+      }
+    })
+    DOMNewPlayerDialogCancel.addEventListener('click', (e) => {
+      e.preventDefault;
+      player1 = null;
+      player2 = null;
+      display.closeNewPlayerDialog();
+    })
     startBtn.addEventListener("click", () => {
-      newGame();
+      if (!player1){
+	display.openNewPlayerDialog('X');
+      } else {
+	newGame();
+      }
     });
     quitBtn.addEventListener("click", () => {
       quitGame();
@@ -345,9 +391,7 @@ const game = (function GameController() {
     gameState = 0;
     display.newGame(player1, player2, gameBoard);
   }
-//}}}
 
-// PUBLIC METHODS {{{
   const quitGame = () => {
     DOMBoard.removeEventListener("click", playRound);
     gameBoard.resetBoard();
@@ -362,8 +406,6 @@ const game = (function GameController() {
   const newGame = () => {
     if (playerQuit) {
       DOMBoard.addEventListener("click", playRound);
-      player1 = Player("Player 1", "X");
-      player2 = Player("Player 2", "O");
       playerQuit = false;
     }
     beginGame();
@@ -372,10 +414,6 @@ const game = (function GameController() {
 
   init();
   
-  return {
-    newGame,
-    quitGame
-  };
 })();//}}}
 
 
